@@ -108,9 +108,9 @@ namespace pdfpc.Window {
         protected Gtk.TextView notes_view;
 
         /**
-         * Indication that the hilight tool is selected
+         * Indication that the highlight tool is selected
          */
-        protected Gtk.Image hilight_icon;
+        protected Gtk.Image highlight_icon;
 
         /**
          * Indication that the pen tool is selected
@@ -293,7 +293,7 @@ namespace pdfpc.Window {
             this.saved_icon = this.load_icon("saved.svg", icon_height);
             this.loaded_icon = this.load_icon("loaded.svg", icon_height);
 
-            this.hilight_icon = this.load_icon("hilight.svg", icon_height);
+            this.highlight_icon = this.load_icon("highlight.svg", icon_height);
             this.pen_icon = this.load_icon("pen.svg", icon_height);
             this.eraser_icon = this.load_icon("eraser.svg", icon_height);
 
@@ -388,7 +388,7 @@ namespace pdfpc.Window {
             status.pack_start(this.pause_icon, false, false, 0);
             status.pack_start(this.saved_icon, false, false, 0);
             status.pack_start(this.loaded_icon, false, false, 0);
-            status.pack_start(this.hilight_icon, false, false, 0);
+            status.pack_start(this.highlight_icon, false, false, 0);
             status.pack_start(this.pen_icon, false, false, 0);
             status.pack_start(this.eraser_icon, false, false, 0);
 
@@ -506,9 +506,9 @@ namespace pdfpc.Window {
                 this.frozen_icon.hide();
             }
             if (this.presentation_controller.is_pointer_active()) {
-                this.hilight_icon.show();
+                this.highlight_icon.show();
             } else {
-                this.hilight_icon.hide();
+                this.highlight_icon.hide();
             }
             if (this.presentation_controller.is_eraser_active()) {
                 this.eraser_icon.show();
