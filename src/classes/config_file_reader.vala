@@ -115,7 +115,7 @@ namespace pdfpc {
         }
 
         private void bindMouse(string wholeLine, string[] fields) {
-            if (fields.length != 3) {
+            if (fields.length != 3 && fields.length != 4) {
                 GLib.printerr("Bad mouse specification: %s\n", wholeLine);
                 return;
             }
@@ -130,6 +130,9 @@ namespace pdfpc {
                 bt.keyCode = button;
                 bt.modMask = modMask;
                 bt.actionName = fields[2];
+                if (fields.length > 3) {
+                    bt.actionArg = fields[3];
+                }
                 Options.mouse_bindings.add(bt);
             }
         }
