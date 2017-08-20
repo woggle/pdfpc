@@ -333,12 +333,18 @@ namespace pdfpc {
         private double pen_last_y;
         private bool pen_is_pressed = false;
 
+        protected void init_pen_drawing_if_needed(Gtk.Allocation a) {
+            if (this.pen_drawing == null) {
+                this.pen_drawing = Drawings.create(metadata,
+                                                   a.width,
+                                                   a.height);
+                this.current_mouse_tool = pen_drawing.pen;
+                this.current_pen_drawing_tool = pen_drawing.pen;
+            }
+        }
+
         protected void init_presentation_pen() {
-            this.pen_drawing = Drawings.create(metadata,
-                                               presentation_allocation.width,
-                                               presentation_allocation.height);
-            this.current_mouse_tool = pen_drawing.pen;
-            this.current_pen_drawing_tool = pen_drawing.pen;
+            init_pen_drawing_if_needed(presentation_allocation);
             this.presentation_pen_surface = presentation.pen_drawing_surface;
             this.presentation_pen_surface.draw.connect ((context) => {
                 draw_pen_surface(context, presentation_allocation, false);
@@ -348,6 +354,7 @@ namespace pdfpc {
         }
 
         protected void init_presenter_pen() {
+            init_pen_drawing_if_needed(presenter_allocation);
             this.presenter_pen_surface = presenter.pen_drawing_surface;
             this.presenter_pen_surface.hide();
 
@@ -453,6 +460,15 @@ namespace pdfpc {
         }
 
         protected bool on_move_pen(Gtk.Widget source, Gdk.EventMotion move) {
+            Gdk.InputSource source_type  = move.get_source_device().get_source();
+            if (source_type == Gdk.InputSource.ERASER) {
+                current_pen_drawing_tool = pen_drawing.eraser;
+            } else if (source_type == Gdk.InputSource.PEN) {
+                current_pen_drawing_tool = pen_drawing.pen;
+            } else { // MOUSE, CURSOR, TOUCHPAD, TRACKPOINT, ....
+                current_pen_drawing_tool = current_mouse_tool;
+            }
+
             if (pen_enabled) {
                 move_pen(move.x / (double) presenter_allocation.width, move.y / (double) presenter_allocation.height);
             }
@@ -488,7 +504,7 @@ namespace pdfpc {
                     if (arc_radius < 1.0) {
                         arc_radius = 1.0;
                     }
-                    context.arc(pen_last_x, pen_last_y, arc_radius, 0, 2*Math.PI);
+                    context.arc(x, y, arc_radius, 0, 2*Math.PI);
                     context.stroke();
                 }
             }
@@ -710,6 +726,7 @@ namespace pdfpc {
                     presentation_pointer_surface.hide();
                 }
             }
+            this.controllables_update();
         }
 
 
