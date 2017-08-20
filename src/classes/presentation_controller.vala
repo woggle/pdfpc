@@ -655,12 +655,7 @@ namespace pdfpc {
         public void move_pointer(double percent_x, double percent_y) {
             pointer_y = percent_y;
             pointer_x = percent_x;
-            if (presenter != null) {
-                presenter_pointer_surface.queue_draw();
-            }
-            if (presentation != null) {
-                presentation_pointer_surface.queue_draw();
-            }
+            queue_pointer_surface_draws();
         }
 
         /**
