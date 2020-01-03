@@ -364,24 +364,14 @@ namespace pdfpc {
                 return true;
             });
 
-            this.presenter_pen_surface.button_press_event.connect((event) => {
-                if (pen_enabled) {
-                    move_pen(
-                        event.x / presenter_allocation.width,
-                        event.y / presenter_allocation.height
-                    );
-                    pen_is_pressed = true;
-                    return true;
-                } else {
-                    return false;
-                }
-            });
+            this.presenter_pen_surface.button_press_event.connect(on_press_pen);
 
             this.presenter_pen_surface.button_release_event.connect((event) => {
                 if (pen_enabled) {
                     move_pen(
                         event.x / presenter_allocation.width,
-                        event.y / presenter_allocation.height
+                        event.y / presenter_allocation.height,
+                        0.0
                     );
                     pen_is_pressed = false;
                     return true;
@@ -403,9 +393,13 @@ namespace pdfpc {
             return pen_enabled && current_mouse_tool == pen_drawing.pen;
         }
 
-        private void move_pen(double x, double y) {
+        private void move_pen(double x, double y, double pressure) {
+            if (this.presenter_pen_surface.get_window().get_event_compression() == true) {
+                GLib.printerr("ERROR (move_pen): event compression was enabled\n");
+            }
+            this.presenter_pen_surface.get_window().set_event_compression(false);
             if (this.pen_is_pressed) {
-                pen_drawing.add_line(this.current_pen_drawing_tool, this.pen_last_x, this.pen_last_y, x, y);
+                pen_drawing.add_line(this.current_pen_drawing_tool, this.pen_last_x, this.pen_last_y, x, y, pressure);
             }
             this.pen_last_x = x;
             this.pen_last_y = y;
@@ -454,8 +448,27 @@ namespace pdfpc {
             this.queue_pen_surface_draws();
         }
 
+        protected bool on_press_pen(Gtk.Widget source, Gdk.EventButton event) {
+            if (pen_enabled) {
+                move_pen(
+                    event.x / presenter_allocation.width,
+                    event.y / presenter_allocation.height,
+                    1.0
+                );
+                pen_is_pressed = true;
+                return true;
+            } else {
+                return false;
+            }
+        }
+
         protected bool on_move_pen(Gtk.Widget source, Gdk.EventMotion move) {
-            Gdk.InputSource source_type  = move.get_source_device().get_source();
+            Gdk.Device source_device = move.get_source_device();
+            Gdk.InputSource source_type  = source_device.get_source();
+            double pressure;
+            if (!source_device.get_axis(move.axes, Gdk.AxisUse.PRESSURE, out pressure)) {
+                pressure = 1.0;
+            }
             if (source_type == Gdk.InputSource.ERASER) {
                 current_pen_drawing_tool = pen_drawing.eraser;
             } else if (source_type == Gdk.InputSource.PEN) {
@@ -465,7 +478,7 @@ namespace pdfpc {
             }
 
             if (pen_enabled) {
-                move_pen(move.x / (double) presenter_allocation.width, move.y / (double) presenter_allocation.height);
+                move_pen(move.x / (double) presenter_allocation.width, move.y / (double) presenter_allocation.height, pressure);
             }
             return true;
         }
@@ -530,11 +543,13 @@ namespace pdfpc {
                 pen_drawing_present = true;
                 if (this._presenter != null) {
                     this._presenter.get_window().set_event_compression(false);
+                    this.presenter_pen_surface.get_window().set_event_compression(false);
                 }
                 current_pen_drawing_tool = pen_drawing.pen;
             } else {
                 if (this._presenter != null) {
-                    this.presenter.get_window().set_event_compression(true);
+                    this._presenter.get_window().set_event_compression(true);
+                    this.presenter_pen_surface.get_window().set_event_compression(false);
                 }
             }
             hide_or_show_pen_surfaces();

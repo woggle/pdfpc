@@ -368,6 +368,14 @@ namespace pdfpc.Window {
                 this.main_view.get_renderer().height / this.gdk_scale
             );
             this.video_surface.set_events(Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.BUTTON_RELEASE_MASK | Gdk.EventMask.POINTER_MOTION_MASK);
+            GLib.printerr("false for video surface");
+            this.video_surface.get_window().set_event_compression(false);
+            GLib.printerr("false overlay layout");
+            this.overlay_layout.get_window().set_event_compression(false);
+            GLib.printerr("false overview");
+            this.overview.get_window().set_event_compression(false);
+            GLib.printerr("false this");
+            this.get_window().set_event_compression(false);
 
             var current_view_and_stricts = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
             current_view_and_stricts.pack_start(overlay_layout, false, false, 0);

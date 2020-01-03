@@ -31,6 +31,10 @@ namespace pdfpc.Drawings {
 
         public bool is_eraser {get; set;}
 
+        public double prev_x1 {get; set;}
+        public double prev_y1 {get; set;}
+        public double prev_pressure {get; set;}
+
         public Gdk.RGBA get_rgba() {
             Gdk.RGBA result = Gdk.RGBA();
             result.red = this.red;
@@ -56,18 +60,21 @@ namespace pdfpc.Drawings {
             this.is_eraser = false;
         }
 
-        public void add_line(Cairo.Context context, double x1, double y1, double x2, double y2) {
+        public void add_line(Cairo.Context context, double x1, double y1, double x2, double y2, double pressure) {
             if (this.is_eraser) {
                 context.set_operator(Cairo.Operator.CLEAR);
             } else {
                 context.set_operator(Cairo.Operator.OVER);
                 context.set_source_rgba(this.red, this.green, this.blue, this.alpha);
             }
-            context.set_line_width(this.width);
+            context.set_line_width(this.width * pressure);
             context.set_line_cap(Cairo.LineCap.ROUND);
             context.move_to(x1, y1);
             context.line_to(x2, y2);
             context.stroke();
+            this.prev_x1 = x1;
+            this.prev_y1 = y1;
+            this.prev_pressure = prev_pressure;
         }
     }
 
@@ -117,10 +124,11 @@ namespace pdfpc.Drawings {
          * Draw a line from (x1, y1) to (x2, y2).
          * x and y coordinates are always in range [0, 1].
          */
-        public void add_line(DrawingTool tool, double x1, double y1, double x2, double y2) {
+        public void add_line(DrawingTool tool, double x1, double y1, double x2, double y2, double pressure) {
             tool.add_line(this.context,
                 x1 * this.width, y1 * this.height,
-                x2 * this.width, y2 * this.height
+                x2 * this.width, y2 * this.height,
+                pressure
             );
         }
 

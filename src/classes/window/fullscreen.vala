@@ -170,6 +170,12 @@ namespace pdfpc.Window {
             this.set_size_request(this.screen_geometry.width, this.screen_geometry.height);
 
             this.add_events(Gdk.EventMask.POINTER_MOTION_MASK);
+            if (this.get_window() != null) {
+                this.get_window().set_event_compression(false);
+                if (this.get_window().get_event_compression() == true) {
+                    GLib.printerr("ERROR: event compression still enabled?\n");
+                }
+            }
             this.motion_notify_event.connect(this.on_mouse_move);
 
             // Start the 5 seconds timeout after which the mouse cursor is
@@ -186,6 +192,7 @@ namespace pdfpc.Window {
             if (event.type != Gdk.EventType.MAP) {
                 return false;
             }
+            GLib.printerr("on_mapped\n");
 
             // move does not work on wayland sessions correctly, since wayland
             // has no concept of global coordinates. For X11, this does the
@@ -205,6 +212,15 @@ namespace pdfpc.Window {
             // moved it to the correct screen anyways, we should be safe here.
             this.fullscreen_on_monitor(this.screen_to_use, this.screen_num_to_use);
             #endif
+            
+            if (this.get_window() != null) {            
+                this.get_window().set_event_compression(false);
+                if (this.get_window().get_event_compression() == true) {
+                    GLib.printerr("ERROR: event compression still enabled?\n");
+                }
+            } else {
+                GLib.printerr("not mapped form on_mapped\n");
+            }
 
             return true;
         }
@@ -217,6 +233,10 @@ namespace pdfpc.Window {
             this.get_window().set_cursor(null);
 
             this.restart_hide_cursor_timer();
+
+            if (this.get_window().get_event_compression() == true) {
+                GLib.printerr("ERROR: event compression still enabled?\n");
+            }
 
             return false;
         }
