@@ -172,9 +172,6 @@ namespace pdfpc.Window {
             this.add_events(Gdk.EventMask.POINTER_MOTION_MASK);
             if (this.get_window() != null) {
                 this.get_window().set_event_compression(false);
-                if (this.get_window().get_event_compression() == true) {
-                    GLib.printerr("ERROR: event compression still enabled?\n");
-                }
             }
             this.motion_notify_event.connect(this.on_mouse_move);
 
@@ -192,7 +189,6 @@ namespace pdfpc.Window {
             if (event.type != Gdk.EventType.MAP) {
                 return false;
             }
-            GLib.printerr("on_mapped\n");
 
             // move does not work on wayland sessions correctly, since wayland
             // has no concept of global coordinates. For X11, this does the
@@ -215,9 +211,6 @@ namespace pdfpc.Window {
             
             if (this.get_window() != null) {            
                 this.get_window().set_event_compression(false);
-                if (this.get_window().get_event_compression() == true) {
-                    GLib.printerr("ERROR: event compression still enabled?\n");
-                }
             } else {
                 GLib.printerr("not mapped form on_mapped\n");
             }
@@ -233,10 +226,6 @@ namespace pdfpc.Window {
             this.get_window().set_cursor(null);
 
             this.restart_hide_cursor_timer();
-
-            if (this.get_window().get_event_compression() == true) {
-                GLib.printerr("ERROR: event compression still enabled?\n");
-            }
 
             return false;
         }

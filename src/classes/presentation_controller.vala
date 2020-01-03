@@ -539,6 +539,7 @@ namespace pdfpc {
 
         public void toggle_pen_drawing() {
             pen_enabled = !pen_enabled;
+            hide_or_show_pen_surfaces();
             if (pen_enabled) {
                 pen_drawing_present = true;
                 if (this._presenter != null) {
@@ -552,7 +553,6 @@ namespace pdfpc {
                     this.presenter_pen_surface.get_window().set_event_compression(false);
                 }
             }
-            hide_or_show_pen_surfaces();
             this.controllables_update();
         }
 
