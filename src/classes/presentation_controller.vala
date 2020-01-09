@@ -45,6 +45,27 @@ namespace pdfpc {
          */
         public int current_slide_number { get; protected set; }
 
+        public File? event_log_file = null;
+        public FileOutputStream? event_log = null;
+
+        public void write_to_event_log(string line) {
+            if (Options.event_log == null) { return; }
+            if (event_log == null) {
+                event_log_file = File.new_for_path(Options.event_log);
+                event_log = event_log_file.append_to(FileCreateFlags.NONE);
+            }
+            DateTime now = new DateTime.now_local();
+            string timestamp = now.format("%Y-%m-%dT%H:%M:%S")
+                + ".%06d".printf(now.get_microsecond()) + 
+                now.format("%z");
+            event_log.write((
+                "file=" + get_pdf_fname() + " " +
+                "ts=" + timestamp + " " +
+                line + 
+                "\n"
+            ).data);
+        }
+
         public void switch_to_slide_number(int slide_number, bool skip_history=false) {
             if (slide_number == this.current_slide_number) {
                 // already there...
@@ -64,6 +85,7 @@ namespace pdfpc {
                     this.faded_to_black = false;
                 }
             }
+            write_to_event_log("slide=" + slide_number.to_string());
 
             if (!skip_history) {
                 if (this.history_bck.is_empty ||

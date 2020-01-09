@@ -278,6 +278,11 @@ namespace pdfpc {
          */
         public static bool final_slide_overlay = false;
 
+        /**
+         * Log events (slide changes, etc.) to a log file.
+         */
+        public static string? event_log = null;
+
         public class BindTuple {
             public string type;
             public uint keyCode;

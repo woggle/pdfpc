@@ -317,6 +317,9 @@ namespace pdfpc {
                 case "final-slide":
                     Options.final_slide_overlay = bool.parse(fields[2]);
                     break;
+                case "event-log":
+                    Options.event_log = fields[2];
+                    break;
                 default:
                     GLib.printerr("Unknown option %s in pdfpcrc\n", fields[1]);
                     break;
