@@ -85,7 +85,13 @@ namespace pdfpc {
                     this.faded_to_black = false;
                 }
             }
-            write_to_event_log("slide=" + slide_number.to_string());
+
+            string slide_info = "real_slide=" + slide_number.to_string()
+                              + " slide=" + this.metadata.real_slide_to_user_slide(slide_number).to_string();
+            foreach (string l in this.metadata.get_index_labels_for_page(slide_number)) {
+                slide_info = slide_info.concat(" index_label=\"" + l + "\"");
+            }
+            write_to_event_log(slide_info);
 
             if (!skip_history) {
                 if (this.history_bck.is_empty ||

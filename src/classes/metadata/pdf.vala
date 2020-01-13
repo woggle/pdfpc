@@ -55,6 +55,8 @@ namespace pdfpc.Metadata {
          */
         protected Poppler.Document document;
 
+        private Gee.SortedMap<int, Gee.List<string> > page_to_index_labels;
+
         /**
          * Renderer to be used for rendering the slides
          */
@@ -566,6 +568,10 @@ namespace pdfpc.Metadata {
                 parse_skip_line(skip_line);
             }
 
+            this.page_to_index_labels = new Gee.TreeMap<int, Gee.List<string>>();
+            walk_index(new Gee.ArrayList<string>(), new Poppler.IndexIter(this.document),
+                (int) this.page_count);
+
             // Prepopulate notes from annotations
             notes_from_document();
         }
@@ -949,6 +955,54 @@ namespace pdfpc.Metadata {
                 this.mapping_page_num = page_num;
             }
             return this.action_mapping;
+        }
+
+        private void mark_pages(int start_page, int end_page, Gee.List<string> labels) {
+            for (int page_num = start_page; page_num < end_page; ++page_num) {
+                Gee.List<string> stored_labels = new Gee.ArrayList<string>();
+                stored_labels.insert_all(0, labels);
+                if (page_to_index_labels.get(page_num) == null) {
+                    page_to_index_labels.set(page_num, stored_labels);
+                }
+            }
+        }
+
+        private void walk_index(Gee.List<string> current_index_labels, Poppler.IndexIter current, int limit) {
+            int last_page_num = 0;
+            Poppler.IndexIter? prev_child = null;
+            do {
+                Poppler.Action action = current.get_action();
+                if (action.any.type == Poppler.ActionType.GOTO_DEST) {
+                    int page_num = this.document.find_dest(
+                        action.goto_dest.dest.named_dest
+                    ).page_num;
+                    if (prev_child != null) {
+                        walk_index(current_index_labels, prev_child, page_num);
+                    }
+                    if (last_page_num != 0) {
+                        mark_pages(last_page_num, page_num, current_index_labels);
+                        current_index_labels.remove_at(current_index_labels.size - 1);
+                    }
+                    current_index_labels.insert(current_index_labels.size, action.any.title);
+                    last_page_num = page_num;
+                }
+                prev_child = current.get_child();
+            } while(current.next());
+            if (prev_child != null) {
+                walk_index(current_index_labels, prev_child, limit);
+            }
+            if (last_page_num != 0) {
+                mark_pages(last_page_num, limit, current_index_labels);
+                current_index_labels.remove_at(current_index_labels.size - 1);
+            }
+        }
+
+        public Gee.List<string> get_index_labels_for_page(int page_num) {
+            Gee.List<string> result = page_to_index_labels.get(page_num);
+            if (result == null) {
+                result = Gee.List.empty<string>();
+            }
+            return result;
         }
     }
 
